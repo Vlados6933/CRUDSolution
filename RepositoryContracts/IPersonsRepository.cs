@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 namespace RepositoryContracts
 {
     /// <summary>
-    /// Represents data access ligoc for managing Person entity
+    /// Represents data access logic for managing Person entity
     /// </summary>
     public interface IPersonsRepository
     {

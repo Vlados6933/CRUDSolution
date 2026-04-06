@@ -8,20 +8,20 @@ using ServiceContracts.Enums;
 namespace CRUDExample.Controllers
 {
     [Route("[controller]")]
-    public class PersonsController : Controller
+    public class PersonsController(IPersonsService personsService, ICountriesService countriesService, ILogger<PersonsController> logger) : Controller
     {
-        private readonly IPersonsService _personsService;
-        private readonly ICountriesService _countriesService;
-        public PersonsController(IPersonsService personsService, ICountriesService countriesService)
-        {
-            _personsService = personsService;
-            _countriesService = countriesService;
-        }
+        private readonly IPersonsService _personsService = personsService;
+        private readonly ICountriesService _countriesService = countriesService;
+        private readonly ILogger<PersonsController> _logger = logger;
+
 
         [Route("[action]")]
         [Route("/")]
         public async Task<IActionResult> Index(string searchBy, string? searchString, string sortBy = nameof(PersonResponse.PersonName), SortOrderOptions sortOrder = SortOrderOptions.ASC)
         {
+            _logger.LogInformation("Index action method of PersonController");
+
+            _logger.LogDebug($"searchBy: {searchBy}, searchString: {searchString}, sortBy: {sortBy}, sortOrder: {sortOrder}");
             ViewBag.SearhFields = new Dictionary<string, string>()
             {
                 {nameof(PersonResponse.PersonName), "Person Name" },

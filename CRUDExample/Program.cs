@@ -4,6 +4,7 @@ using Repositories;
 using RepositoryContracts;
 using ServiceContracts;
 using Services;
+using Serilog;
 
 namespace CRUDExample
 {
@@ -12,6 +13,15 @@ namespace CRUDExample
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            //Serilog
+            builder.Host.UseSerilog((HostBuilderContext context, IServiceProvider service, LoggerConfiguration loggerConfiguration) => 
+            {
+                loggerConfiguration.ReadFrom.Configuration(context.Configuration)
+                .ReadFrom.Services(service);
+            });
+
+            builder.Services.AddHttpLogging();
             builder.Services.AddControllersWithViews();
             builder.Services.AddScoped<ICountriesService, CountriesService>();
             builder.Services.AddScoped<IPersonsService, PersonsService>();
@@ -32,10 +42,14 @@ namespace CRUDExample
             {
                 app.UseDeveloperExceptionPage();
             }
+
             if (builder.Environment.IsEnvironment("Test") == false)
             {
                 Rotativa.AspNetCore.RotativaConfiguration.Setup("wwwroot", wkhtmltopdfRelativePath: "Rotativa");
             }
+
+            app.UseSerilogRequestLogging();
+            app.UseHttpLogging();
             app.UseStaticFiles();
             app.UseRouting();
             app.MapControllers();

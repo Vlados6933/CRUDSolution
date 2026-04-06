@@ -1,6 +1,4 @@
 ﻿using Entities;
-using EntityFrameworkCoreMock;
-using Microsoft.EntityFrameworkCore;
 using ServiceContracts;
 using ServiceContracts.DTO;
 using ServiceContracts.Enums;
@@ -10,6 +8,8 @@ using AutoFixture;
 using RepositoryContracts;
 using Moq;
 using System.Linq.Expressions;
+using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace CRUDTests
 {
@@ -20,6 +20,8 @@ namespace CRUDTests
         private readonly IPersonsRepository _personsRepository;
         private readonly ITestOutputHelper _testOutputHelper;
         private readonly IFixture _fixture;
+        private readonly Mock<IDiagnosticContext> _diagnosticContextMock;
+        private readonly Mock<ILogger<PersonsService>> _loggerMock;
 
         public PersonsServiceTest(ITestOutputHelper testOutputHelper)
         {
@@ -27,7 +29,10 @@ namespace CRUDTests
             _personRepositoryMock = new Mock<IPersonsRepository>();
             _personsRepository = _personRepositoryMock.Object;
 
-            _personsService = new PersonsService(_personsRepository);
+             _diagnosticContextMock = new Mock<IDiagnosticContext>();
+             _loggerMock = new Mock<ILogger<PersonsService>>();
+
+            _personsService = new PersonsService(_personsRepository, _loggerMock.Object, _diagnosticContextMock.Object);
 
             _testOutputHelper = testOutputHelper;
         }
@@ -330,7 +335,7 @@ namespace CRUDTests
         public async Task UpdatePerson_PersonNameIsNull_ToBeArgumentException()
         {
             CountryAddRequest country_request = _fixture.Create<CountryAddRequest>();
-          
+
             Person person = _fixture.Build<Person>()
                 .With(temp => temp.PersonName, null as string)
                 .With(temp => temp.Email, "email@example.com")
