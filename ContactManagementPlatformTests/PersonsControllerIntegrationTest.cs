@@ -1,7 +1,7 @@
 ﻿using Fizzler.Systems.HtmlAgilityPack;
 using HtmlAgilityPack;
 
-namespace CRUDTests
+namespace ContactManagementPlatformTests
 {
     public class PersonsControllerIntegrationTest(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
     {

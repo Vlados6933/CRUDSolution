@@ -1,5 +1,5 @@
 ﻿using AutoFixture;
-using CRUDExample.Controllers;
+using ContactManagementPlatform.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -7,7 +7,7 @@ using ServiceContracts;
 using ServiceContracts.DTO;
 using ServiceContracts.Enums;
 
-namespace CRUDTests
+namespace ContactManagementPlatformTests
 {
     public class PersonsControllerTest
     {

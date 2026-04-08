@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ServiceContracts;
 
-namespace CRUDExample.Controllers
+namespace ContactManagementPlatform.Controllers
 {
     [Route("[controller]")]
     public class CountriesController : Controller

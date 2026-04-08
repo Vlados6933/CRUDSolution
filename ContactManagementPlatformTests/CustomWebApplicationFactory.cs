@@ -1,11 +1,11 @@
-﻿using CRUDExample;
+﻿using ContactManagementPlatform;
 using Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CRUDTests
+namespace ContactManagementPlatformTests
 {
     public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {

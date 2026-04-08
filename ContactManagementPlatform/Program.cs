@@ -6,7 +6,7 @@ using ServiceContracts;
 using Services;
 using Serilog;
 
-namespace CRUDExample
+namespace ContactManagementPlatform
 {
     public class Program
     {

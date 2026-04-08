@@ -8,7 +8,7 @@ using Moq;
 using AutoFixture;
 using RepositoryContracts;
 
-namespace CRUDTests
+namespace ContactManagementPlatformTests
 {
     public class CountriesServiceTest
     {
