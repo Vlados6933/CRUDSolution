@@ -5,30 +5,15 @@ using System.Net.Http.Headers;
 
 namespace ContactManagementPlatform.Filters.ActionFilters
 {
-    public class PersonsListActionFilter(ILogger<PersonsListActionFilter> logger) : IActionFilter
+    public class PersonsListActionFilter(ILogger<PersonsListActionFilter> logger) : IAsyncActionFilter
     {
         private readonly ILogger<PersonsListActionFilter> _logger = logger;
-        public void OnActionExecuted(ActionExecutedContext context)
+
+        public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            _logger.LogInformation("{FilterName}.{MethodName} method", nameof(PersonsListActionFilter), nameof(OnActionExecuted));
+            _logger.LogInformation("{FilterName}.{MethodName} method", nameof(PersonsListActionFilter), nameof(OnActionExecutionAsync));
 
             PersonsController personsController = (PersonsController)context.Controller;
-
-            IDictionary<string, object?>? parameters = (IDictionary<string, object?>?)context.HttpContext.Items["arguments"];
-            if (parameters != null)
-            {
-                if(parameters.ContainsKey("searchBy"))
-                    personsController.ViewData["CurrentSearchBy"] = Convert.ToString(parameters["searchBy"]);
-
-                if(parameters.ContainsKey("searchString"))
-                    personsController.ViewData["CurrentSearchString"] = Convert.ToString(parameters["searchString"]);
-
-                if (parameters.ContainsKey("sortBy"))
-                    personsController.ViewData["CurrentSortBy"] = Convert.ToString(parameters["sortBy"]);
-
-                if (parameters.ContainsKey("sortOrder"))
-                    personsController.ViewData["CurrentSortOrder"] = Convert.ToString(parameters["sortOrder"]);
-            }
 
             personsController.ViewBag.SearhFields = new Dictionary<string, string>()
             {
@@ -39,13 +24,12 @@ namespace ContactManagementPlatform.Filters.ActionFilters
                 {nameof(PersonResponse.CountryID), "Country" },
                 {nameof(PersonResponse.Address), "Address" }
             };
-        }
 
-        public void OnActionExecuting(ActionExecutingContext context)
-        {
+            await next();
+
             context.HttpContext.Items["arguments"] = context.ActionArguments;
 
-            _logger.LogInformation("{FilterName}.{MethodName} method", nameof(PersonsListActionFilter), nameof(OnActionExecuting));
+            _logger.LogInformation("{FilterName}.{MethodName} method", nameof(PersonsListActionFilter), nameof(OnActionExecutionAsync));
 
             if (context.ActionArguments.ContainsKey("searchBy"))
             {
@@ -71,8 +55,6 @@ namespace ContactManagementPlatform.Filters.ActionFilters
                     }
                 }
             }
-
-
         }
     }
 }

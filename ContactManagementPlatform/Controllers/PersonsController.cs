@@ -1,4 +1,9 @@
-﻿using ContactManagementPlatform.Filters.ActionFilters;
+﻿using ContactManagementPlatform.Filters;
+using ContactManagementPlatform.Filters.ActionFilters;
+using ContactManagementPlatform.Filters.AuthorizationFilters;
+using ContactManagementPlatform.Filters.ExceptionFilters;
+using ContactManagementPlatform.Filters.ResourceFilters;
+using ContactManagementPlatform.Filters.ResultFilters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Rotativa.AspNetCore;
@@ -9,6 +14,9 @@ using ServiceContracts.Enums;
 namespace ContactManagementPlatform.Controllers
 {
     [Route("[controller]")]
+    [ResponseHeaderFilterFactory("MyKey-From-Controller", "MyValue-From-Controller", 3)]
+    [TypeFilter<HandleExceptionFilter>]
+    [TypeFilter<PersonsAlwaysRunResultFilter>]
     public class PersonsController(IPersonsService personsService, ICountriesService countriesService, ILogger<PersonsController> logger) : Controller
     {
         private readonly IPersonsService _personsService = personsService;
@@ -18,7 +26,11 @@ namespace ContactManagementPlatform.Controllers
 
         [Route("[action]")]
         [Route("/")]
-        [TypeFilter(typeof(PersonsListActionFilter))]
+        [TypeFilter<PersonsListActionFilter>(Order = 4)]
+        //[TypeFilter<ResponseHeaderActionFilter>(Arguments = new object[] { "MyKey-From-Action", "MyValue-From-Action", 1 }, Order = 1)]
+        [ResponseHeaderFilterFactory("MyKey-From-Action", "MyValue-From-Action", 1)] 
+        [TypeFilter<PersonsListResultFilter>]
+        [SkipFilter]
         public async Task<IActionResult> Index(string searchBy, string? searchString, string sortBy = nameof(PersonResponse.PersonName), SortOrderOptions sortOrder = SortOrderOptions.ASC)
         {
             _logger.LogInformation("Index action method of PersonController");
@@ -27,7 +39,13 @@ namespace ContactManagementPlatform.Controllers
 
             List<PersonResponse> persons = await _personsService.GetFilteredPersons(searchBy, searchString);
 
+            ViewBag.CurrentSearchBy = searchBy;
+            ViewBag.CurrentSearchString = searchString;
+
             List<PersonResponse> sortedPersons = await _personsService.GetSortedPersons(persons, sortBy, sortOrder);
+
+            ViewBag.CurrentSortBy = sortBy;
+            ViewBag.CurrentSortOrder = sortOrder.ToString();
 
             return View(sortedPersons);
         }
@@ -44,18 +62,10 @@ namespace ContactManagementPlatform.Controllers
 
         [HttpPost]
         [Route("[action]")]
+        [TypeFilter<PersonCreateAndEditPostActionFilter>]
+        [TypeFilter<FeatureDisableResourseFilter>(Arguments = new object[] { false })]
         public async Task<IActionResult> Create(PersonAddRequest personAddRequest)
         {
-            if (!ModelState.IsValid)
-            {
-                List<CountryResponse> countries = await _countriesService.GetAllCountries();
-                ViewBag.Countries = countries.Select(temp => new SelectListItem() { Text = temp.CountryName, Value = temp.CountryID.ToString() });
-
-                ViewBag.Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-
-                return View(personAddRequest);
-            }
-
             PersonResponse personResponse = await _personsService.AddPerson(personAddRequest);
 
             return RedirectToAction("Index", "Persons");
@@ -63,6 +73,7 @@ namespace ContactManagementPlatform.Controllers
 
         [HttpGet]
         [Route("[action]/{personID}")]
+        [TypeFilter<TokenResultFilter>]
         public async Task<IActionResult> Edit(Guid personID)
         {
             PersonResponse? personResponse = await _personsService.GetPersonByPersonID(personID);
@@ -82,6 +93,8 @@ namespace ContactManagementPlatform.Controllers
 
         [HttpPost]
         [Route("[action]/{personID}")]
+        [TypeFilter<PersonCreateAndEditPostActionFilter>]
+        [TypeFilter<TokenAuthorizationFilter>]
         public async Task<IActionResult> Edit(PersonUpdateRequest personUpdateRequest)
         {
             PersonResponse? personResponse = await _personsService.GetPersonByPersonID(personUpdateRequest.PersonID);
@@ -91,21 +104,10 @@ namespace ContactManagementPlatform.Controllers
                 return RedirectToAction("Index");
             }
 
-            if (ModelState.IsValid)
-            {
-                PersonResponse updatedPerson = await _personsService.UpdatePerson(personUpdateRequest);
+            PersonResponse updatedPerson = await _personsService.UpdatePerson(personUpdateRequest);
 
-                return RedirectToAction("Index");
-            }
-            else
-            {
-                List<CountryResponse> countries = await _countriesService.GetAllCountries();
-                ViewBag.Countries = countries.Select(temp => new SelectListItem() { Text = temp.CountryName, Value = temp.CountryID.ToString() });
+            return RedirectToAction("Index");
 
-                ViewBag.Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-
-                return View(personResponse.ToPersonUpdateRequest());
-            }
         }
 
         [HttpGet]
@@ -141,9 +143,9 @@ namespace ContactManagementPlatform.Controllers
         {
             List<PersonResponse> persons = await _personsService.GetAllPersons();
 
-            return new ViewAsPdf("PersonsPDF", persons, ViewData) 
+            return new ViewAsPdf("PersonsPDF", persons, ViewData)
             {
-                PageMargins = new Rotativa.AspNetCore.Options.Margins() {Top = 20, Right = 20, Bottom = 20, Left= 20 },
+                PageMargins = new Rotativa.AspNetCore.Options.Margins() { Top = 20, Right = 20, Bottom = 20, Left = 20 },
                 PageOrientation = Rotativa.AspNetCore.Options.Orientation.Landscape
             };
         }
@@ -159,7 +161,7 @@ namespace ContactManagementPlatform.Controllers
         public async Task<IActionResult> PersonsExcel()
         {
             MemoryStream memoryStream = await _personsService.GetPersonsExcel();
-            return File(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "persons.xlsx"); 
+            return File(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "persons.xlsx");
         }
     }
 }

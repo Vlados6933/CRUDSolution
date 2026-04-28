@@ -5,6 +5,7 @@ using RepositoryContracts;
 using ServiceContracts;
 using Services;
 using Serilog;
+using ContactManagementPlatform.Filters.ActionFilters;
 
 namespace ContactManagementPlatform
 {
@@ -15,14 +16,29 @@ namespace ContactManagementPlatform
             var builder = WebApplication.CreateBuilder(args);
 
             //Serilog
-            builder.Host.UseSerilog((HostBuilderContext context, IServiceProvider service, LoggerConfiguration loggerConfiguration) => 
+            builder.Host.UseSerilog((HostBuilderContext context, IServiceProvider service, LoggerConfiguration loggerConfiguration) =>
             {
                 loggerConfiguration.ReadFrom.Configuration(context.Configuration)
                 .ReadFrom.Services(service);
             });
 
+
             builder.Services.AddHttpLogging();
-            builder.Services.AddControllersWithViews();
+
+            builder.Services.AddControllersWithViews(options =>
+            {
+                var logger = builder.Services.BuildServiceProvider().
+                GetRequiredService<ILogger<ResponseHeaderActionFilter>>();
+
+                options.Filters.Add(new ResponseHeaderActionFilter(logger) 
+                { 
+                    Key = "MyKey-From-Global", 
+                    Value = "MyValue-From-Global", 
+                    Order = 2 
+                });
+            });
+
+            builder.Services.AddTransient<ResponseHeaderActionFilter>();
             builder.Services.AddScoped<ICountriesService, CountriesService>();
             builder.Services.AddScoped<IPersonsService, PersonsService>();
             builder.Services.AddScoped<ICountriesRepository, CountriesRepository>();
