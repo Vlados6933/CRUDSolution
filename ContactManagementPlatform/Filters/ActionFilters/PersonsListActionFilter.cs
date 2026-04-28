@@ -1,6 +1,7 @@
 ﻿using ContactManagementPlatform.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ServiceContracts.DTO;
+using ServiceContracts.Enums;
 using System.Net.Http.Headers;
 
 namespace ContactManagementPlatform.Filters.ActionFilters

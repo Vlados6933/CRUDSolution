@@ -1,11 +1,12 @@
+using ContactManagementPlatform.Filters.ActionFilters;
 using Entities;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using RepositoryContracts;
+using Serilog;
 using ServiceContracts;
 using Services;
-using Serilog;
-using ContactManagementPlatform.Filters.ActionFilters;
+using System.Configuration;
 
 namespace ContactManagementPlatform
 {
@@ -22,29 +23,9 @@ namespace ContactManagementPlatform
                 .ReadFrom.Services(service);
             });
 
+            builder.Services.ConfigureSrevise(builder.Configuration);
 
-            builder.Services.AddHttpLogging();
-
-            builder.Services.AddControllersWithViews(options =>
-            {
-                var logger = builder.Services.BuildServiceProvider().
-                GetRequiredService<ILogger<ResponseHeaderActionFilter>>();
-
-                options.Filters.Add(new ResponseHeaderActionFilter(logger) 
-                { 
-                    Key = "MyKey-From-Global", 
-                    Value = "MyValue-From-Global", 
-                    Order = 2 
-                });
-            });
-
-            builder.Services.AddTransient<ResponseHeaderActionFilter>();
-            builder.Services.AddScoped<ICountriesService, CountriesService>();
-            builder.Services.AddScoped<IPersonsService, PersonsService>();
-            builder.Services.AddScoped<ICountriesRepository, CountriesRepository>();
-            builder.Services.AddScoped<IPersonsRepository, PersonsRepository>();
-
-            if (!builder.Environment.IsEnvironment("Test"))
+            if (builder.Environment.IsEnvironment("Test") == false)
             {
                 builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 {
