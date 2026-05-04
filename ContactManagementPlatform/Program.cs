@@ -1,12 +1,8 @@
-using ContactManagementPlatform.Filters.ActionFilters;
+using ContactManagementPlatform.Middleware;
 using Entities;
 using Microsoft.EntityFrameworkCore;
-using Repositories;
-using RepositoryContracts;
 using Serilog;
-using ServiceContracts;
-using Services;
-using System.Configuration;
+
 
 namespace ContactManagementPlatform
 {
@@ -38,6 +34,11 @@ namespace ContactManagementPlatform
             if (builder.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseExceptionHandlingMiddleware();
             }
 
             if (builder.Environment.IsEnvironment("Test") == false)

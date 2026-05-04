@@ -1,7 +1,6 @@
 ﻿using ContactManagementPlatform.Filters;
 using ContactManagementPlatform.Filters.ActionFilters;
 using ContactManagementPlatform.Filters.AuthorizationFilters;
-using ContactManagementPlatform.Filters.ExceptionFilters;
 using ContactManagementPlatform.Filters.ResourceFilters;
 using ContactManagementPlatform.Filters.ResultFilters;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +14,7 @@ namespace ContactManagementPlatform.Controllers
 {
     [Route("[controller]")]
     [ResponseHeaderFilterFactory("MyKey-From-Controller", "MyValue-From-Controller", 3)]
-    [TypeFilter<HandleExceptionFilter>]
+    //[TypeFilter<HandleExceptionFilter>]
     [TypeFilter<PersonsAlwaysRunResultFilter>]
     public class PersonsController(IPersonsService personsService, ICountriesService countriesService, ILogger<PersonsController> logger) : Controller
     {
