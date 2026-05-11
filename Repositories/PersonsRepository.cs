@@ -13,7 +13,7 @@ namespace Repositories
 
         public async Task<Person> AddPerson(Person person)
         {
-            _db.Persons.Add(person);
+            await _db.Persons.AddAsync(person);
             await _db.SaveChangesAsync();
 
             return person;
@@ -21,8 +21,7 @@ namespace Repositories
 
         public async Task<bool> DeletePersonByPersonID(Guid personID)
         {
-            _db.Persons.RemoveRange(_db.Persons.Where(temp => temp.PersonID == personID));
-            int rowsDeleted = await _db.SaveChangesAsync();
+            int rowsDeleted = await _db.Persons.Where(temp => temp.PersonID == personID).ExecuteDeleteAsync();
 
             return rowsDeleted > 0;
         }
@@ -31,39 +30,45 @@ namespace Repositories
         {
             _logger.LogInformation("GetAllPersons of PersonsRepository");
 
-            return await _db.Persons.Include("Country").ToListAsync();
+            return await _db.Persons
+                .AsNoTrackingWithIdentityResolution()
+                .Include(p => p.Country)
+                .ToListAsync();
         }
 
         public async Task<List<Person>> GetFilteredPersons(Expression<Func<Person, bool>> predicate)
-        {
+        {          
             _logger.LogInformation("GetFilteredPersons of PersonsRepository");
 
-            return await _db.Persons.Include("Country").Where(predicate).ToListAsync();
+            return await _db.Persons
+                .AsNoTrackingWithIdentityResolution()
+                .Include(p => p.Country)
+                .Where(predicate).ToListAsync();
         }
            
         public async Task<Person?> GetPersonByPersonID(Guid personID)
         {
-            return await _db.Persons.Include("Country").FirstOrDefaultAsync(tenp => tenp.PersonID == personID);
+            return await _db.Persons
+                .AsNoTrackingWithIdentityResolution()
+                .Include(p => p.Country)
+                .FirstOrDefaultAsync(tenp => tenp.PersonID == personID);
         }
 
-        public async Task<Person> UpdatePerson(Person person)
+        public async Task<bool> UpdatePerson(Person person)
         {
-            Person? matchingPerson = await _db.Persons.FirstOrDefaultAsync(temp => temp.PersonID == person.PersonID);
+            int rowsDeleted = await _db.Persons
+                .Where(temp => temp.PersonID == person.PersonID)
+                .ExecuteUpdateAsync(s => s
+            .SetProperty(p => p.PersonName, person.PersonName)
+            .SetProperty(p => p.Email, person.Email)
+            .SetProperty(p => p.DateOfBirth, person.DateOfBirth)
+            .SetProperty(p => p.Gender, person.Gender)
+            .SetProperty(p => p.CountryID, person.CountryID)
+            .SetProperty(p => p.Address, person.Address)
+            .SetProperty(p => p.ReceiveNewsLetters, person.ReceiveNewsLetters)
+            );
 
-            if(matchingPerson == null)
-                return person;
-
-            matchingPerson.PersonName = person.PersonName;
-            matchingPerson.Email = person.Email;
-            matchingPerson.DateOfBirth = person.DateOfBirth;
-            matchingPerson.Gender = person.Gender;
-            matchingPerson.CountryID = person.CountryID;
-            matchingPerson.Address = person.Address;
-            matchingPerson.ReceiveNewsLetters = person.ReceiveNewsLetters;
-
-            await _db.SaveChangesAsync();
-
-            return matchingPerson;
+            return rowsDeleted > 0;
         }
     }
 }

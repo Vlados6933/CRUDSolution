@@ -8,7 +8,7 @@ namespace ContactManagementPlatform
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +30,22 @@ namespace ContactManagementPlatform
             }
 
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                try
+                {
+                    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                    await DbInitializer.SeedDataAsync(context);
+                }
+                catch (Exception ex)
+                {
+                    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+                    logger.LogError(ex, "An error occurred whilst seeding the database");
+                }
+            }
 
             if (builder.Environment.IsDevelopment())
             {

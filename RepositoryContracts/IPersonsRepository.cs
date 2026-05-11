@@ -18,6 +18,6 @@ namespace RepositoryContracts
 
         Task<bool> DeletePersonByPersonID(Guid personID);
 
-        Task<Person> UpdatePerson(Person person);
+        Task<bool> UpdatePerson(Person person);
     }
 }

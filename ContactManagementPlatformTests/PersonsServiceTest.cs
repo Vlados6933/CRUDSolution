@@ -366,7 +366,7 @@ namespace ContactManagementPlatformTests
 
             PersonUpdateRequest? person_update_request = person_response_expected.ToPersonUpdateRequest();
 
-            _personRepositoryMock.Setup(temp => temp.UpdatePerson(It.IsAny<Person>())).ReturnsAsync(person);
+            _personRepositoryMock.Setup(temp => temp.UpdatePerson(It.IsAny<Person>())).ReturnsAsync(true);
 
             _personRepositoryMock.Setup(temp => temp.GetPersonByPersonID(It.IsAny<Guid>())).ReturnsAsync(person);
 

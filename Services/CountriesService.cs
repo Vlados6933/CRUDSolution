@@ -39,7 +39,10 @@ namespace Services
 
         public async Task<List<CountryResponse>> GetAllCountries()
         {
-            return (await _countriesRepository.GetAllCountries()).Select(country => country.ToCountryResponse()).ToList();
+            return (await _countriesRepository
+                .GetAllCountries())
+                .Select(country => country.ToCountryResponse())
+                .ToList();
         }
 
         public async Task<CountryResponse?> GetCountryByCountryID(Guid? countryID)
