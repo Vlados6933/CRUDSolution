@@ -1,0 +1,23 @@
+﻿using ContactsManager.Core.Domain.Entities;
+using System.Linq.Expressions;
+
+namespace ContactsManager.Core.Domain.RepositoryContracts
+{
+    /// <summary>
+    /// Represents data access logic for managing Person entity
+    /// </summary>
+    public interface IPersonsRepository
+    {
+        Task<Person> AddPerson(Person person);
+
+        Task<List<Person>> GetAllPersons();
+
+        Task<Person?> GetPersonByPersonID(Guid personID);
+
+        Task<List<Person>> GetFilteredPersons(Expression<Func<Person, bool>> predicate);
+
+        Task<bool> DeletePersonByPersonID(Guid personID);
+
+        Task<bool> UpdatePerson(Person person);
+    }
+}
